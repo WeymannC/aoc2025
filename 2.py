@@ -1,3 +1,4 @@
+from functools import lru_cache
 from math import floor, log10, ceil
 
 from aocd import get_data
@@ -27,5 +28,20 @@ def part1(used_input: str):
                     total += i
     return total
 
+def part2(used_input: str):
+    pairs = parse_input(used_input)
+    total = 0
+    for start, end in pairs:
+        for i in range(start, end+1):
+            digits = number_of_digits(i)
+            for j in range(1, digits):
+                if digits % j == 0:
+                    divisor = sum(10**k for k in range(0, digits, j))
+                    if i % divisor == 0:
+                        total += i
+                        break
+    return total
 
 print(part1(data))
+
+print(part2(data))
