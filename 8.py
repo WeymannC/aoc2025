@@ -1,5 +1,6 @@
 from collections import defaultdict
 from functools import lru_cache
+from itertools import combinations
 from math import floor, log10, ceil, prod
 
 from aocd import get_data
@@ -34,18 +35,49 @@ def parse_input(raw_input: str):
         points.append((int(x), int(y), int(z)))
     return points
 
-@lru_cache(maxsize=None)
 def square_distance(p, q):
     x,y,z = p
     r,s,t = q
     return (x-r)**2 + (y-s)**2 + (z-t)**2
 
+def build_distances(points):
+    return [(square_distance(p,q), p, q) for p, q in combinations(points, 2)]
+
 def part1(used_input: str, number_of_links: int):
-    pass
+    points = parse_input(used_input)
+    distances = build_distances(points)
+    circuits = {point: {point} for point in points}
+
+    selected_pairs = sorted(distances)[:number_of_links]
+    for _, p, q in selected_pairs:
+        for r in circuits[p].copy():
+            circuits[r] |= circuits[q]
+        for r in circuits[q].copy():
+            circuits[r] |= circuits[p]
+
+    visited = set()
+    sizes = []
+    for p, circuit in circuits.items():
+        if p not in visited:
+            sizes.append(len(circuit))
+            visited |= circuit
+
+    return prod(sorted(sizes, reverse=True)[:3])
 
 def part2(used_input: str):
-    pass
+    points = parse_input(used_input)
+    distances = build_distances(points)
+    circuits = {point: {point} for point in points}
 
-print(part1(example, 10))
+    selected_pairs = sorted(distances)
+    for _, p, q in selected_pairs:
+        for r in circuits[p].copy():
+            circuits[r] |= circuits[q]
+        for r in circuits[q].copy():
+            circuits[r] |= circuits[p]
+        if len(circuits[p]) == len(points):
+            return p[0] * q[0]
 
-print(part2(example))
+print(part1(data, 1000))
+
+print(part2(data))
