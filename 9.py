@@ -36,19 +36,34 @@ def part1(used_input: str):
     areas = build_areas(points)
     return max(area for area, _, _ in areas)
 
+def build_edges(points):
+    return list(pairwise(points)) + [(points[-1], points[0])]
+
+def edge_in_area(p, q, edge):
+    x, y = p
+    r, s = q
+    if any((min(x,r) < u < max(x,r)) and (min(y,s) < v < max(y,s)) for u, v in edge):
+        return True
+    ((a,b), (c,d)) = edge
+    if b == d:
+        if (min(a,c) <= min(x,r) and max(a,c) >= max(x,r)) and min(y,s) < b < max(y,s):
+            return True
+    if a == c:
+        if (min(b,d) <= min(y,s) and max(b,d) >= max(y,s)) and min(x,r) < a < max(x,r):
+            return True
+    return False
 
 def part2(used_input: str):
     points = parse_input(used_input)
     areas = build_areas(points)
+    edges = build_edges(points)
     valid_areas = []
     for area, p, q in areas:
-        x, y = p
-        r, s = q
-        if any((min(x,r) < u < max(x,r)) and (min(y,s) < v < max(y,s)) for u, v in points):
+        if any(edge_in_area(p,q,edge) for edge in edges):
             continue
         valid_areas.append((area, p, q))
     return max(area for area, _, _ in valid_areas)
 
 print(part1(data))
 
-print(part2(example))
+print(part2(data))
